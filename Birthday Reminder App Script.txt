@@ -1,0 +1,43 @@
+function sendBirthdayReminder() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var today = new Date();
+  
+  // Format today's date as DD/MM (Day/Month)
+  var formattedToday = Utilities.formatDate(today, Session.getScriptTimeZone(), "dd/MM");
+  Logger.log("Today's date: " + formattedToday); // For debugging
+  
+  // Set up to read rows from the second row (skip the header)
+  var startRow = 2; // Start at row 2, assuming row 1 is header
+  var numRows = sheet.getLastRow() - 1; // Number of rows with data
+  var dataRange = sheet.getRange(startRow, 1, numRows, 3); // Fetch columns Name, Birthday, Phone
+  var data = dataRange.getValues();
+  
+  var birthdayPeople = [];
+  
+  // Loop through each row of the sheet data
+  data.forEach(function(row) {
+    var name = row[0];      // Column A: Name
+    var birthday = new Date(row[1]);  // Column B: Birthday (includes year)
+    var phone = row[2];     // Column C: Phone number
+    
+    // Extract and format the day/month from the birthday
+    var formattedBirthday = Utilities.formatDate(birthday, Session.getScriptTimeZone(), "dd/MM");
+    Logger.log("Checking birthday for: " + name + " (Birthday: " + formattedBirthday + ")");
+    
+    // Compare with today's date
+    if (formattedBirthday === formattedToday) {
+      birthdayPeople.push(name + " (" + phone + ")");
+    }
+  });
+  
+  // If there are people with birthdays today, send an email reminder
+  if (birthdayPeople.length > 0) {
+    var subject = "Birthday Reminder!";
+    var message = "Today's birthdays:\n\n" + birthdayPeople.join("\n");
+    Logger.log("Sending email for: " + birthdayPeople.join(", ")); // Log who is being sent
+    
+    MailApp.sendEmail("tolulopelatunde20@gmail.com", subject, message); // Change this to the desired email recipient
+  } else {
+    Logger.log("No birthdays today."); // Log if no birthdays are found
+  }
+}
